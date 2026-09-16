@@ -22,11 +22,15 @@ jobs:
         env:
           TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
-          LOGIN: ${{ github.event.issue.user.login }}
+          AUTHOR: ${{ github.event.issue.user.login }}
+          TITLE: ${{ github.event.issue.title }}
           URL: ${{ github.event.issue.html_url }}
         run: |
           [ -n "$TG_TOKEN" ] && [ -n "$TG_CHAT" ] || exit 0
-          text=$(printf '@%s\n%s' "$LOGIN" "$URL")
+          login=$(printf '%s' "$TITLE" | grep -oE '^@[A-Za-z0-9-]{1,39}$' | tr -d '@' || true)
+          [ -n "$login" ] || login="$AUTHOR"
+          text=$(printf '@%s\n%s' "$login" "$URL")
+          if [ "$login" != "$AUTHOR" ]; then text=$(printf '%s\nподал @%s' "$text" "$AUTHOR"); fi
           curl -sS -o /dev/null "https://api.telegram.org/bot${TG_TOKEN}/sendMessage" \
             --data-urlencode "chat_id=${TG_CHAT}" --data-urlencode "text=${text}" \
             --data-urlencode "disable_web_page_preview=true"
