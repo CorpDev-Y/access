@@ -28,11 +28,8 @@ jobs:
           [ -n "$TG_TOKEN" ] && [ -n "$TG_CHAT" ] || exit 0
           login=$(printf '%s' "$TITLE" | grep -oE '^@[A-Za-z0-9-]{1,39}$' | tr -d '@' || true)
           [ -n "$login" ] || login="$AUTHOR"
-          text=$(printf 'Заявка на доступ: @%s' "$login")
-          tail_text='Решение: в панели, раздел «Заявки на доступ»'
-          if [ "$login" != "$AUTHOR" ]; then text=$(printf '%s\nподал @%s' "$text" "$AUTHOR"); fi
+          text="Заявка на доступ: @$login"
+          if [ "$login" != "$AUTHOR" ]; then text="$text (подал @$AUTHOR)"; fi
+          text="$text. Решение: в панели, раздел «Заявки на доступ»."
           curl -sS -o /dev/null "https://api.telegram.org/bot${TG_TOKEN}/sendMessage" \
-            --data-urlencode "chat_id=${TG_CHAT}" --data-urlencode "text=${text}
-
-${tail_text}" \
-            --data-urlencode "disable_web_page_preview=true"
+            --data-urlencode "chat_id=${TG_CHAT}" --data-urlencode "text=${text}"
