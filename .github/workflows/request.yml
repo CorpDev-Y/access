@@ -30,6 +30,6 @@ jobs:
           [ -n "$login" ] || login="$AUTHOR"
           text="Заявка на доступ: @$login"
           if [ "$login" != "$AUTHOR" ]; then text="$text (подал @$AUTHOR)"; fi
-          text="$text. Решение: в панели, раздел «Заявки на доступ»."
+          text="$text. Откройте панель скиллов: заявка будет первой на странице."
           curl -sS -o /dev/null "https://api.telegram.org/bot${TG_TOKEN}/sendMessage" \
             --data-urlencode "chat_id=${TG_CHAT}" --data-urlencode "text=${text}"
