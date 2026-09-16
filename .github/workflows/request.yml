@@ -1,0 +1,32 @@
+name: request
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: label
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          NUMBER: ${{ github.event.issue.number }}
+        run: gh issue edit "$NUMBER" -R "$REPO" --add-label access-request > /dev/null
+
+      - name: notify
+        env:
+          TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
+          LOGIN: ${{ github.event.issue.user.login }}
+          URL: ${{ github.event.issue.html_url }}
+        run: |
+          [ -n "$TG_TOKEN" ] && [ -n "$TG_CHAT" ] || exit 0
+          text=$(printf '@%s\n%s' "$LOGIN" "$URL")
+          curl -sS -o /dev/null "https://api.telegram.org/bot${TG_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TG_CHAT}" --data-urlencode "text=${text}" \
+            --data-urlencode "disable_web_page_preview=true"
